@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>海員上船前訓練測驗</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              nautical: {
+                900: '#0f172a', // Slate 900
+                800: '#1e293b', // Slate 800
+                gold: '#fbbf24', // Amber 400
+                red: '#ef4444',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- React & ReactDOM (Development versions for standalone) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0"
+  }
+}
+</script>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- Constants & Data ---
+        const EMAIL_RECIPIENT = "ism@wisdomlines.com.tw,sma@wisdomlines.com.tw";
+
+        const QUESTIONS = [
+          {
+            id: 1,
+            question: "在船上，所有的專業基石與最高準則是什麼？",
+            options: [
+              { id: "A", text: "準時送達貨物" },
+              { id: "B", text: "安全第一" },
+              { id: "C", text: "節省燃油" },
+              { id: "D", text: "服從命令" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 3: 安全第一，永遠第一！無論在甲板、機艙或休息艙，安全規定都是首要原則。"
+          },
+          {
+            id: 2,
+            question: "通常身體適應船上搖晃（暈船）需要多久時間？",
+            options: [
+              { id: "A", text: "1 天" },
+              { id: "B", text: "3-5 天" },
+              { id: "C", text: "2 週" },
+              { id: "D", text: "1 個月" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 4: 通常 3-5 天身體就會適應。"
+          },
+          {
+            id: 3,
+            question: "打破船員間隔閡與語言障礙最快的方式是什麼？",
+            options: [
+              { id: "A", text: "保持沈默" },
+              { id: "B", text: "主動打招呼、保持笑容並分享家鄉零食" },
+              { id: "C", text: "只與同國籍船員交談" },
+              { id: "D", text: "努力工作不說話" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 4: 快速融入團隊的秘密武器：主動打招呼，保持笑容，分享家鄉特產零食。"
+          },
+          {
+            id: 4,
+            question: "聽到「連續短聲」的警報訊號代表什麼？",
+            options: [
+              { id: "A", text: "棄船指令" },
+              { id: "B", text: "用餐時間" },
+              { id: "C", text: "火警警報" },
+              { id: "D", text: "人員落水" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 5: 連續短聲意義為火警警報。"
+          },
+          {
+            id: 5,
+            question: "棄船指令（Abandon Ship）的警報訊號是什麼？",
+            options: [
+              { id: "A", text: "七短一長聲" },
+              { id: "B", text: "三長聲" },
+              { id: "C", text: "連續長聲" },
+              { id: "D", text: "一短一長" }
+            ],
+            correctAnswerId: "A",
+            explanation: "Slide 5: 七短一長意義為撤船指令。"
+          },
+          {
+            id: 6,
+            question: "關於安全帽的佩戴，哪一點是必須的？",
+            options: [
+              { id: "A", text: "只需放在頭上" },
+              { id: "B", text: "必須配備並扣好下巴帶" },
+              { id: "C", text: "只有在機艙才需要戴" },
+              { id: "D", text: "顏色必須是白色" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 6: 52%的工傷報告顯示受傷者未戴安全帽。必須配備下巴帶。"
+          },
+          {
+            id: 7,
+            question: "機艙噪音高達 110-120 分貝，必須佩戴什麼來保護聽力？",
+            options: [
+              { id: "A", text: "藍牙耳機" },
+              { id: "B", text: "棉花" },
+              { id: "C", text: "耳罩/耳塞" },
+              { id: "D", text: "毛帽" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 6: 耳罩/耳塞可保護聽力免於永久損傷。"
+          },
+          {
+            id: 8,
+            question: "進行高處作業時，必須佩戴什麼裝備防止墜落？",
+            options: [
+              { id: "A", text: "護目鏡" },
+              { id: "B", text: "安全吊帶" },
+              { id: "C", text: "防護服" },
+              { id: "D", text: "焊接面罩" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 6: 安全吊帶：高處作業時，防止墜落。"
+          },
+          {
+            id: 9,
+            question: "在手動搬運的藝術中，身體的哪一個部位被稱為「龍骨」，錯誤姿勢會造成永久傷害？",
+            options: [
+              { id: "A", text: "膝蓋" },
+              { id: "B", text: "脊柱" },
+              { id: "C", text: "肩膀" },
+              { id: "D", text: "手腕" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 7: 錯誤的姿勢會對你的脊柱——身體的「龍骨」——造成永久性傷害。"
+          },
+          {
+            id: 10,
+            question: "搬運重物時，前彎超過多少度是危險的？",
+            options: [
+              { id: "A", text: "5度" },
+              { id: "B", text: "10度" },
+              { id: "C", text: "20度" },
+              { id: "D", text: "45度" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 8: 過度前彎 (>20°) 會造成背部危險。"
+          },
+          {
+            id: 11,
+            question: "「跳躍」動作會產生體重幾倍的衝擊波，從而損害脊椎？",
+            options: [
+              { id: "A", text: "2到3倍" },
+              { id: "B", text: "7到10倍" },
+              { id: "C", text: "20倍" },
+              { id: "D", text: "不會產生衝擊" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 8: 跳躍產生體重7到10倍的衝擊波。"
+          },
+          {
+            id: 12,
+            question: "哪一種搬運動作組合極度危險，可能立即導致椎間盤損傷？",
+            options: [
+              { id: "A", text: "彎曲膝蓋" },
+              { id: "B", text: "移動腳步" },
+              { id: "C", text: "扭轉 + 前彎" },
+              { id: "D", text: "保持背部挺直" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 8: 扭轉+前彎是極度危險的組合。"
+          },
+          {
+            id: 13,
+            question: "進入密閉空間（Confined Space）的黃金守則是？",
+            options: [
+              { id: "A", text: "動作要快" },
+              { id: "B", text: "從不單獨進入，必須充分通風與氣體測試" },
+              { id: "C", text: "帶手電筒即可" },
+              { id: "D", text: "憋氣進入" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 9: 黃金守則：從不單獨進入！進入前必須充分通風與氣體測試，並有同事在外面守候。"
+          },
+          {
+            id: 14,
+            question: "高空作業（Working at Height）的主要危害除了墜落外，還包括什麼？",
+            options: [
+              { id: "A", text: "缺氧" },
+              { id: "B", text: "有毒氣體" },
+              { id: "C", text: "強風與工具掉落" },
+              { id: "D", text: "暈船" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 9: 主要危害：墜落、強風、工具掉落。"
+          },
+          {
+            id: 15,
+            question: "公司對毒品的政策是什麼？",
+            options: [
+              { id: "A", text: "假日可以少量使用" },
+              { id: "B", text: "零容忍" },
+              { id: "C", text: "下船後不管制" },
+              { id: "D", text: "看種類而定" }
+            ],
+            correctAnswerId: "B",
+            explanation: "Slide 10-11: 公司對毒品與酒精執行「零容忍」政策。"
+          },
+          {
+            id: 16,
+            question: "如果在船上被檢測出毒品陽性，將面臨什麼後果？",
+            options: [
+              { id: "A", text: "口頭警告" },
+              { id: "B", text: "罰款了事" },
+              { id: "C", text: "立即停職、遣返並留下永久紀錄" },
+              { id: "D", text: "寫悔過書" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 11: 嚴重後果：立即停職、遣返，可能移交港口檢調單位，個人履歷留下永久紀錄。"
+          },
+          {
+            id: 17,
+            question: "關於酒精的「紅線」，工作前、值班前、當班期間的規定是？",
+            options: [
+              { id: "A", text: "可以喝啤酒" },
+              { id: "B", text: "不超過兩杯" },
+              { id: "C", text: "一滴酒都不行" },
+              { id: "D", text: "看個人酒量" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 12: 紅線：工作前、值班前、當班期間，一滴酒都不行！"
+          },
+          {
+            id: 18,
+            question: "當班前「幾小時內」不允許飲酒？",
+            options: [
+              { id: "A", text: "1小時" },
+              { id: "B", text: "2小時" },
+              { id: "C", text: "4小時" },
+              { id: "D", text: "8小時" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 12: 具體規定：當班前「四小時內」不允許飲酒。"
+          },
+          {
+            id: 19,
+            question: "所有公司部門的緊急聯絡電話與信箱，可以在哪裡找到？",
+            options: [
+              { id: "A", text: "船長室門口" },
+              { id: "B", text: "機艙控制室" },
+              { id: "C", text: "餐廳和船員休息區的佈告欄" },
+              { id: "D", text: "甲板上" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 14: 都可以在餐廳和船員休息區的佈告欄上找到。"
+          },
+          {
+            id: 20,
+            question: "啟航前的最終確認，除了個人證件和物品外，還要熟悉什麼？",
+            options: [
+              { id: "A", text: "當地美食" },
+              { id: "B", text: "電影清單" },
+              { id: "C", text: "安全要求（PPE、逃生集合點、報告制度）" },
+              { id: "D", text: "免稅店位置" }
+            ],
+            correctAnswerId: "C",
+            explanation: "Slide 15: 熟悉安全要求：PPE、逃生集合點、報告制度。"
+          }
+        ];
+
+        // --- Icons (SVG Components) ---
+        const IconBase = ({ children, className }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Anchor = ({ className }) => (
+            <IconBase className={className}>
+                <circle cx="12" cy="5" r="3" />
+                <line x1="12" y1="22" x2="12" y2="8" />
+                <path d="M5 12H2a10 10 0 0 0 20 0h-3" />
+            </IconBase>
+        );
+
+        const Ship = ({ className }) => (
+            <IconBase className={className}>
+                <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.9 5.8 2.38 6" />
+                <path d="M12 10V4" />
+                <path d="M8 8v2" />
+                <path d="M16 8v2" />
+            </IconBase>
+        );
+
+        const ArrowRight = ({ className }) => (
+            <IconBase className={className}>
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+            </IconBase>
+        );
+
+        const ChevronLeft = ({ className }) => (
+            <IconBase className={className}>
+                <path d="m15 18-6-6 6-6" />
+            </IconBase>
+        );
+
+        const ChevronRight = ({ className }) => (
+            <IconBase className={className}>
+                <path d="m9 18 6-6-6-6" />
+            </IconBase>
+        );
+
+        const CheckCircle2 = ({ className }) => (
+            <IconBase className={className}>
+                <circle cx="12" cy="12" r="10" />
+                <path d="m9 12 2 2 4-4" />
+            </IconBase>
+        );
+
+        const Mail = ({ className }) => (
+            <IconBase className={className}>
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </IconBase>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <IconBase className={className}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <path d="m22 4-10 10.01-7-7" />
+            </IconBase>
+        );
+
+        const AlertTriangle = ({ className }) => (
+            <IconBase className={className}>
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+            </IconBase>
+        );
+
+        const RefreshCcw = ({ className }) => (
+            <IconBase className={className}>
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 16h5v5" />
+            </IconBase>
+        );
+
+
+        // --- Components ---
+
+        const WelcomeScreen = ({ onStart }) => {
+            const [name, setName] = useState('');
+            const [shipName, setShipName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!name.trim() || !shipName.trim()) {
+                    setError('請填寫完整資訊以開始測驗');
+                    return;
+                }
+                onStart({ name, shipName });
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-nautical-900 to-slate-900">
+                    <div className="w-full max-w-md bg-nautical-800 border border-nautical-gold/30 rounded-2xl shadow-2xl overflow-hidden p-8 relative">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-nautical-gold to-yellow-600"></div>
+                        
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-20 h-20 bg-nautical-900 rounded-full flex items-center justify-center border-2 border-nautical-gold mb-4 shadow-lg shadow-nautical-gold/20">
+                                <Anchor className="w-10 h-10 text-nautical-gold" />
+                            </div>
+                            <h1 className="text-3xl font-bold text-white text-center mb-2">海員上船前訓練測驗</h1>
+                            <p className="text-slate-400 text-center text-sm">請輸入您的基本資料以開始安全認證</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-nautical-gold mb-2 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-nautical-gold rounded-full"></span>
+                                    姓名 (Full Name)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nautical-gold focus:border-transparent transition-all placeholder-slate-600"
+                                    placeholder="請輸入您的真實姓名"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-nautical-gold mb-2 flex items-center gap-2">
+                                    <Ship className="w-4 h-4" />
+                                    船名 (Vessel Name)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={shipName}
+                                    onChange={(e) => setShipName(e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nautical-gold focus:border-transparent transition-all placeholder-slate-600"
+                                    placeholder="請輸入即將服務的船名"
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-sm text-center">
+                                    {error}
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="w-full group flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-nautical-900 font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-[1.02] shadow-lg"
+                            >
+                                開始測驗
+                                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const QuizScreen = ({
+            currentQuestion,
+            currentQuestionIndex,
+            totalQuestions,
+            selectedOptionId,
+            onSelectOption,
+            onNext,
+            onPrevious,
+            onSubmit,
+        }) => {
+            const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
+            const progressPercentage = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+
+            return (
+                <div className="min-h-screen flex flex-col items-center bg-slate-950 text-white p-4">
+                    {/* Progress Bar */}
+                    <div className="w-full max-w-3xl mb-8 mt-4">
+                        <div className="flex justify-between text-xs text-nautical-gold mb-2 uppercase tracking-widest font-bold">
+                            <span>Question {currentQuestionIndex + 1}</span>
+                            <span>{totalQuestions} Total</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-nautical-gold to-yellow-600 transition-all duration-500 ease-out"
+                                style={{ width: `${progressPercentage}%` }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* Question Card */}
+                    <div className="w-full max-w-3xl bg-nautical-800/80 backdrop-blur-sm border border-slate-700 rounded-2xl p-6 md:p-10 shadow-2xl flex-grow flex flex-col">
+                        <h2 className="text-xl md:text-2xl font-semibold mb-8 text-white leading-relaxed">
+                            <span className="text-nautical-gold mr-3">
+                                {currentQuestion.id < 10 ? `0${currentQuestion.id}` : currentQuestion.id}.
+                            </span>
+                            {currentQuestion.question}
+                        </h2>
+
+                        <div className="space-y-4 flex-grow">
+                            {currentQuestion.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => onSelectOption(option.id)}
+                                    className={`w-full text-left p-4 md:p-5 rounded-xl border transition-all duration-200 flex items-center group ${
+                                        selectedOptionId === option.id
+                                            ? 'bg-nautical-gold text-nautical-900 border-nautical-gold shadow-lg shadow-yellow-900/20 font-medium'
+                                            : 'bg-slate-900/50 border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-slate-600'
+                                    }`}
+                                >
+                                    <div
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 mr-4 flex-shrink-0 transition-colors ${
+                                            selectedOptionId === option.id
+                                                ? 'border-nautical-900 text-nautical-900'
+                                                : 'border-slate-500 text-slate-500 group-hover:border-slate-400'
+                                        }`}
+                                    >
+                                        {option.id}
+                                    </div>
+                                    <span className="text-lg">{option.text}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Navigation Buttons */}
+                        <div className="flex justify-between mt-10 pt-6 border-t border-slate-700/50">
+                            <button
+                                onClick={onPrevious}
+                                disabled={currentQuestionIndex === 0}
+                                className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${
+                                    currentQuestionIndex === 0
+                                        ? 'text-slate-600 cursor-not-allowed'
+                                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                                }`}
+                            >
+                                <ChevronLeft className="w-5 h-5 mr-1" />
+                                上一題
+                            </button>
+
+                            {isLastQuestion ? (
+                                <button
+                                    onClick={onSubmit}
+                                    disabled={!selectedOptionId}
+                                    className={`flex items-center px-8 py-3 rounded-lg font-bold shadow-lg transition-all transform ${
+                                        !selectedOptionId
+                                            ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                            : 'bg-gradient-to-r from-nautical-gold to-yellow-600 text-nautical-900 hover:scale-105 hover:shadow-yellow-900/30'
+                                    }`}
+                                >
+                                    完成測驗
+                                    <CheckCircle2 className="w-5 h-5 ml-2" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={onNext}
+                                    className="flex items-center px-8 py-3 bg-slate-100 text-nautical-900 rounded-lg font-bold hover:bg-white transition-all transform hover:translate-x-1"
+                                >
+                                    下一題
+                                    <ChevronRight className="w-5 h-5 ml-1" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ResultScreen = ({ userData, score, answers, questions }) => {
+            const percentage = Math.round((score / questions.length) * 100);
+            const isPassed = percentage >= 80;
+
+            const generateEmailLink = () => {
+                const subject = encodeURIComponent(`測驗結果: ${userData.name} - ${userData.shipName}`);
+                
+                let body = `姓名: ${userData.name}\n`;
+                body += `船名: ${userData.shipName}\n`;
+                body += `分數: ${percentage}% (${score}/${questions.length})\n\n`;
+                body += `答題詳情:\n`;
+                body += `-----------------------------------\n`;
+
+                questions.forEach((q) => {
+                    const userAnswerId = answers[q.id];
+                    const isCorrect = userAnswerId === q.correctAnswerId;
+                    const userAnswerText = q.options.find(o => o.id === userAnswerId)?.text || "未作答";
+                    
+                    body += `Q${q.id}: ${q.question}\n`;
+                    body += `作答: [${userAnswerId}] ${userAnswerText} ${isCorrect ? '(正確)' : '(錯誤)'}\n`;
+                    if (!isCorrect) {
+                        body += `正確答案: [${q.correctAnswerId}]\n`;
+                    }
+                    body += `\n`;
+                });
+
+                return `mailto:${EMAIL_RECIPIENT}?subject=${subject}&body=${encodeURIComponent(body)}`;
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 text-slate-100">
+                    <div className="w-full max-w-2xl bg-nautical-800 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+                        
+                        {/* Header Section */}
+                        <div className={`p-8 text-center ${isPassed ? 'bg-gradient-to-b from-green-900/50 to-nautical-800' : 'bg-gradient-to-b from-red-900/50 to-nautical-800'}`}>
+                            <div className="inline-block p-4 rounded-full bg-slate-900 border-4 border-slate-800 mb-4 shadow-xl">
+                                {isPassed ? (
+                                    <CheckCircle className="w-16 h-16 text-green-500" />
+                                ) : (
+                                    <AlertTriangle className="w-16 h-16 text-red-500" />
+                                )}
+                            </div>
+                            <h2 className="text-3xl font-bold mb-2 text-white">
+                                {isPassed ? '恭喜完成測驗' : '測驗完成'}
+                            </h2>
+                            <p className="text-slate-400">
+                                {userData.name} | {userData.shipName}
+                            </p>
+                        </div>
+
+                        {/* Score Section */}
+                        <div className="px-8 py-6 text-center border-b border-slate-700">
+                            <div className="text-sm text-nautical-gold font-bold uppercase tracking-wider mb-2">最終得分</div>
+                            <div className="text-6xl font-black text-white tracking-tight mb-2">
+                                {percentage}<span className="text-3xl text-slate-500">%</span>
+                            </div>
+                            <p className="text-slate-400 text-sm">
+                                答對 {score} 題 / 共 {questions.length} 題
+                            </p>
+                        </div>
+
+                        {/* Action Section */}
+                        <div className="p-8 space-y-4">
+                            <p className="text-center text-slate-300 text-sm mb-6">
+                                請點擊下方按鈕，系統將自動開啟您的郵件軟體，<br />並帶入測驗結果以寄送至指定信箱。
+                            </p>
+
+                            <a
+                                href={generateEmailLink()}
+                                className="w-full block bg-gradient-to-r from-nautical-gold to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-nautical-900 font-bold py-4 px-6 rounded-xl text-center shadow-lg transition-transform transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                            >
+                                <Mail className="w-5 h-5" />
+                                寄送測驗結果 (開啟郵件)
+                            </a>
+
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="w-full mt-4 py-3 text-slate-500 hover:text-white font-medium transition-colors flex items-center justify-center gap-2"
+                            >
+                                <RefreshCcw className="w-4 h-4" />
+                                重新開始
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [step, setStep] = useState('welcome');
+            const [userData, setUserData] = useState(null);
+            const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+            const [answers, setAnswers] = useState({});
+
+            const handleStart = (data) => {
+                setUserData(data);
+                setStep('quiz');
+            };
+
+            const handleSelectOption = (optionId) => {
+                const currentQId = QUESTIONS[currentQuestionIndex].id;
+                setAnswers(prev => ({
+                    ...prev,
+                    [currentQId]: optionId
+                }));
+            };
+
+            const handleNext = () => {
+                const currentQId = QUESTIONS[currentQuestionIndex].id;
+                if (!answers[currentQId]) return;
+
+                if (currentQuestionIndex < QUESTIONS.length - 1) {
+                    setCurrentQuestionIndex(prev => prev + 1);
+                }
+            };
+
+            const handlePrevious = () => {
+                if (currentQuestionIndex > 0) {
+                    setCurrentQuestionIndex(prev => prev - 1);
+                }
+            };
+
+            const calculateScore = () => {
+                let score = 0;
+                QUESTIONS.forEach(q => {
+                    if (answers[q.id] === q.correctAnswerId) {
+                        score++;
+                    }
+                });
+                return score;
+            };
+
+            const handleSubmit = () => {
+                setStep('result');
+            };
+
+            if (step === 'welcome') {
+                return <WelcomeScreen onStart={handleStart} />;
+            }
+
+            if (step === 'quiz' && userData) {
+                const currentQuestion = QUESTIONS[currentQuestionIndex];
+                return (
+                    <QuizScreen
+                        currentQuestion={currentQuestion}
+                        currentQuestionIndex={currentQuestionIndex}
+                        totalQuestions={QUESTIONS.length}
+                        selectedOptionId={answers[currentQuestion.id]}
+                        onSelectOption={handleSelectOption}
+                        onNext={handleNext}
+                        onPrevious={handlePrevious}
+                        onSubmit={handleSubmit}
+                    />
+                );
+            }
+
+            if (step === 'result' && userData) {
+                const score = calculateScore();
+                return (
+                    <ResultScreen
+                        userData={userData}
+                        score={score}
+                        answers={answers}
+                        questions={QUESTIONS}
+                    />
+                );
+            }
+
+            return null;
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
